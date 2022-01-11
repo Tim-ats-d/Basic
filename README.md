@@ -1,13 +1,5 @@
-# basic
+# Basic
 
+A **WIP** interpreter of original **Dartmouth College BASIC**.
 
-
-## Installation
-
-```
-opam pin add --yes https://github.com/basic/basic.git
-opam install basic
-```
-
-If you want to contribute to the project, please read
-[CONTRIBUTING.md](CONTRIBUTING.md).
+Trying to follow as much as possible this [specification](http://www.bitsavers.org/pdf/dartmouth/BASIC_Oct64.pdf) and its limitations (don't hesitate to report an inconsistency).

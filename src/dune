@@ -1,4 +1,4 @@
 (library
  (name basic)
  (public_name basic)
- (libraries logs))
+ (preprocess (pps ppx_deriving.show)))
