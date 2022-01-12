@@ -1,46 +1,30 @@
 module LineMap = Map.Make (Int)
+module IntSet = Set.Make (Int)
 
-type ctx = {
-  acc : Ast.stmt list;
-  cline : int;
-  end_encounter : bool;
-  lines : int LineMap.t;
-}
+type ctx = { end_encounter : bool; lines : IntSet.t }
 
-let initial =
-  Ok { acc = []; cline = 0; end_encounter = false; lines = LineMap.empty }
+let initial = Ok { end_encounter = false; lines = IntSet.empty }
 
-let preprocess parsed_ast =
+let pp parsed_ast =
+  let prgrm = Array.make 100000 None in
   let pp_stmt (n, stmt) ctx =
     if n <= 0 || n > 99999 then ErrKind.(to_result IllegalLineNumber)
-    else if LineMap.mem n ctx.lines then Ok ctx
+    else if IntSet.mem n ctx.lines then Ok ctx
     else
-      let lines = LineMap.add n ctx.cline ctx.lines in
-      let cline = ctx.cline + 1 in
-      let acc = stmt :: ctx.acc in
+      let lines = IntSet.add n ctx.lines in
       if ctx.end_encounter then ErrKind.(to_result EndIsNotLast)
       else
+        let () = Array.set prgrm n @@ Some stmt in
         match stmt with
-        | Ast.End -> Ok { ctx with end_encounter = true; acc; lines }
-        | GoTo g ->
-            let acc =
-              match LineMap.find_opt g ctx.lines with
-              | Some nb -> Ast.GoTo nb :: acc
-              | None -> acc
-            in
-            Ok { ctx with acc; cline; lines }
-        | _ -> Ok { ctx with cline; acc; lines }
-  in
-  let sorted_ast =
-    List.sort (fun (x, _) (y, _) -> Int.compare x y) parsed_ast
+        | Ast.End -> Ok { end_encounter = true; lines }
+        | _ -> Ok { ctx with lines }
   in
   let res =
-    List.fold_left
-      (fun ctx elem -> Result.bind ctx @@ pp_stmt elem)
-      initial sorted_ast
+    Array.fold_left
+      (fun ctx line -> Result.bind ctx @@ pp_stmt line)
+      initial parsed_ast
   in
   match res with
-  | Ok { acc; end_encounter; _ } ->
-      if end_encounter then Result.ok @@ Array.of_list acc
-      else ErrKind.(to_result NoEndInstruction)
+  | Ok { end_encounter; _ } ->
+      if end_encounter then Ok prgrm else ErrKind.(to_result NoEndInstruction)
   | Error _ as err -> err

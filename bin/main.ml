@@ -16,6 +16,7 @@ open Basic
 
 let prgrm =
   Ast.[ (10, Print [ String "ok" ]); (20, Print [ String "error" ]); (30, End) ]
+(* Ast.(List.init 99998 (fun i -> (i + 1, Print [])) @ [ (99999, End) ]) *)
 
 let () =
   match Preprocess.preprocess prgrm with
