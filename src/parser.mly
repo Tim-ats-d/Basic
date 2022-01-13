@@ -26,7 +26,7 @@
 %%
 
 prgrm:
-  | lines=line* EOF { Preprocess.pp lines @@ !max_line + 1 }
+  | body=line* EOF { { body; max_line = !max_line } }
 
 line:
   | n=INT s=stmt NEWLINE { update_line n; (n, s) }

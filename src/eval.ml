@@ -1,1 +1,1 @@
-let eval ast _data = Ok ast
+let eval prgrm = Preprocess.pp prgrm

@@ -12,7 +12,7 @@ let var = ['A'-'Z'] digit?
 let int = '-'? digit*
 let float = '-'? (digit*)? '.' digit+
 
-let rem = "REM" [^ '\n']* ('\n')
+let rem = "REM" [^ '\n']* '\n'
 
 rule read = parse
   | eof         { EOF }

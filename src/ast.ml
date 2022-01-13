@@ -1,4 +1,4 @@
-type t = stmt array
+type t = { body : stmt option array; data : number array }
 
 and stmt =
   | Let of { name : string; expr : expr }
@@ -38,4 +38,4 @@ and bool_op = And | Or
 
 and unary_op = Invert | Not
 
-type parsed_ast = (stmt option array * number array, ErrKind.t) result
+type parsed_ast = { body : (int * stmt) list; max_line : int }

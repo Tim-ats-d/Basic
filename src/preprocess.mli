@@ -1,1 +1,1 @@
-val pp : (int * Ast.stmt) list -> int -> Ast.parsed_ast
+val pp : Ast.parsed_ast -> (Ast.t, ErrKind.t) result
