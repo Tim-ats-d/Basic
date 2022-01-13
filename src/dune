@@ -1,4 +1,10 @@
 (library
  (name basic)
  (public_name basic)
- (preprocess (pps ppx_deriving.show)))
+ (preprocess
+  (pps ppx_deriving.show)))
+
+(ocamllex lexer)
+
+(menhir
+ (modules parser))
