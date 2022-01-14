@@ -5,7 +5,7 @@ type t =
   | UndefinedNumber
   | ProgramTooLong
   | TooMuchData
-  (* | TooMuchLabels *)
+  | TooMuchLabels
   | SyntaxError
 
 exception Parse_error of t
