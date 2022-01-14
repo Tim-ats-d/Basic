@@ -3,6 +3,9 @@ type t =
   | EndIsNotLast
   | NoEndInstruction
   | UndefinedNumber
+  | ProgramTooLong
+  | TooMuchData
+  | TooMuchLabels
   | SyntaxError
 
 exception Parse_error of t
@@ -14,4 +17,7 @@ let show = function
   | EndIsNotLast -> "END IS NOT LAST"
   | NoEndInstruction -> "NO END INSTRUCTION"
   | UndefinedNumber -> "UNDEFINED NUMBER"
+  | ProgramTooLong -> "PROGRAM TOO LONG"
+  | TooMuchData -> "TOO MUCH DATA"
+  | TooMuchLabels -> "TOO MUCH LABELS"
   | SyntaxError -> "SYNTAX ERROR"

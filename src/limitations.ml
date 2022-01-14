@@ -1,4 +1,5 @@
 type t = {
+  lines_nb : int;
   constants_and_labels : int;
   data : int;
   printed_labels_length : int;

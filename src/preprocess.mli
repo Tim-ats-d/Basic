@@ -1,1 +1,1 @@
-val pp : Ast.parsed_ast -> (Ast.t, ErrKind.t) result
+val pp : Ast.parsed_ast -> Limitations.t -> (Ast.t, ErrKind.t) result

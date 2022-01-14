@@ -3,6 +3,9 @@ type t =
   | EndIsNotLast
   | NoEndInstruction
   | UndefinedNumber
+  | ProgramTooLong
+  | TooMuchData
+  (* | TooMuchLabels *)
   | SyntaxError
 
 exception Parse_error of t
