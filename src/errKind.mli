@@ -1,7 +1,9 @@
 type t =
+  | IllegalConstant
   | IllegalLineNumber
   | EndIsNotLast
   | NoEndInstruction
+  | NoData
   | UndefinedNumber
   | ProgramTooLong
   | TooMuchData

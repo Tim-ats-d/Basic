@@ -27,7 +27,8 @@
 
 prgrm:
   | body=line* EOF
-    { raise_no_end ctx;
+    { raise_no_data ctx;
+      raise_no_end ctx;
       let data = Array.of_list ctx.data in
       { body; data; max_line = ctx.max_line } }
 
@@ -54,7 +55,8 @@ stmt:
 
 assign:
   | LET name=ident EQ expr=expr
-    { incr_constant_label ctx; Let { name; expr } }
+    { incr_constant_label ctx;
+      Let { name; expr } }
 
 var:
   | s=subscript      { s }
@@ -69,9 +71,12 @@ ident:
 
 expr:
   | PLUS e=eb | MINUS e=eb | e=eb { e }
-  | left=eb op=op right=eb        { BinOp { left; op; right } }
-  | PLUS left=eb op=op right=eb   { BinOp { left = UnaryOp { op = UPlus; operand = left }; op; right } }
-  | MINUS left=eb op=op right=eb  { BinOp { left = UnaryOp { op = Invert; operand = left }; op; right } }
+  | left=eb op=op right=eb
+    { BinOp { left; op; right } }
+  | PLUS left=eb op=op right=eb
+    { BinOp { left = UnaryOp { op = UPlus; operand = left }; op; right } }
+  | MINUS left=eb op=op right=eb
+    { BinOp { left = UnaryOp { op = Invert; operand = left }; op; right } }
 
 eb:
   | LPARENT e=expr RPARENT { e }
@@ -80,8 +85,8 @@ eb:
   | v=var                  { v }
 
 num:
-  | i=INT   { Int i }
-  | f=FLOAT { Float f }
+  | i=INT   { raise_illegal_consti i; Int i }
+  | f=FLOAT { raise_illegal_constf f; Float f }
 
 op:
   | PLUS  { Plus }
@@ -95,18 +100,21 @@ fun_call:
   | name=BUILTIN LPARENT arg=expr RPARENT   { FunCall { name; arg } }
 
 read:
-  | READ vars=separated_nonempty_list(COMMA, var) { Read vars }
+  | READ vars=separated_nonempty_list(COMMA, var)
+    { set_read_encounter ctx;
+      Read vars }
 
 data:
   | DATA numbers=separated_nonempty_list(COMMA, snum)
-    { update_data ctx numbers;
+    { set_data_encounter ctx;
+      update_data ctx numbers;
       Data }
 
 snum:
-  | n=INT | PLUS n=INT     { Pos, `Int n }
-  | n=FLOAT | PLUS n=FLOAT { Pos, `Float n }
-  | MINUS n=INT            { Neg, `Int n }
-  | MINUS n=FLOAT          { Neg, `Float n }
+  | n=INT | PLUS n=INT     { raise_illegal_consti n; Pos, `Int n }
+  | n=FLOAT | PLUS n=FLOAT { raise_illegal_constf n; Pos, `Float n }
+  | MINUS n=INT            { raise_illegal_consti n; Neg, `Int n }
+  | MINUS n=FLOAT          { raise_illegal_constf n; Neg, `Float n }
 
 print:
   | PRINT items=separated_list(COMMA, pitem) { Print items }

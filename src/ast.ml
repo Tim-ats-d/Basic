@@ -35,7 +35,7 @@ and expr =
   | UnaryOp of { op : unary_op; operand : expr }
   | FunCall of { name : string; arg : expr }
 
-and number = sign * [ `Int of int | `Float of float ] [@@deriving show]
+and number = sign * [ `Int of int | `Float of float ]
 
 and sign = Pos | Neg
 

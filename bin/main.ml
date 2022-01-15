@@ -3,6 +3,7 @@ open Basic
 let prgrm =
   {basic|10 LET M = 0
 20 LET X = 1
+20 LET X = 1
 30 LET Y = 1
 40 IF X > M THEN 100
 50 PRINT X
