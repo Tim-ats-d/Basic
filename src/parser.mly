@@ -1,11 +1,9 @@
 %{
   open Ast
+  open ParsingCtx
 
-  let max_line = ref 0
 
-  let update_line n =
-    if n <= 0 || n > 99999 then raise ErrKind.(Parse_error IllegalLineNumber)
-    else if n > !max_line then max_line := n
+  let ctx = ParsingCtx.create ()
 %}
 
 %token LET READ DATA PRINT GO IF THEN FOR TO STEP NEXT END STOP DEF FN GOSUB RETURN DIM
@@ -28,10 +26,16 @@
 %%
 
 prgrm:
-  | body=line* EOF { { body; max_line = !max_line } }
+  | body=line* EOF
+    { raise_no_end ctx;
+      let data = Array.of_list ctx.data in
+      { body; data; max_line = ctx.max_line } }
 
 line:
-  | n=INT s=stmt NEWLINE { update_line n; (n, s) }
+  | n=INT s=stmt NEWLINE
+    { incr_line_nb ctx;
+      update_max_line ctx n;
+      (n, s) }
 
 stmt:
   | s=assign
@@ -45,32 +49,29 @@ stmt:
   | s=stop
   | s=def
   | s=gosub
-  | s=return  { s }
-  | END       { End }
+  | s=return   { raise_end_not_last ctx; s }
+  | e=end_     { e }
 
 assign:
-  | LET name=ident EQ expr=expr { Let { name; expr } }
+  | LET name=ident EQ expr=expr
+    { incr_constant_label ctx; Let { name; expr } }
 
 var:
-  | s=subscript { s }
-  | i=LETTER
-  | i=VAR       { Ident i }
+  | s=subscript      { s }
+  | i=LETTER | i=VAR { Ident i }
 
 subscript:
   | name=VAR LPARENT args=separated_nonempty_list(COMMA, expr) RPARENT
     { SubScript { name; args } }
 
 ident:
-  | i=LETTER
-  | i=VAR    { i }
+  | i=LETTER | i=VAR { i }
 
 expr:
-  | PLUS e=eb
-  | MINUS e=eb
-  | e=eb                         { e }
-  | left=eb op=op right=eb       { BinOp { left; op; right } }
-  | PLUS left=eb op=op right=eb  { BinOp { left = UnaryOp { op = UPlus; operand = left }; op; right } }
-  | MINUS left=eb op=op right=eb { BinOp { left = UnaryOp { op = Invert; operand = left }; op; right } }
+  | PLUS e=eb | MINUS e=eb | e=eb { e }
+  | left=eb op=op right=eb        { BinOp { left; op; right } }
+  | PLUS left=eb op=op right=eb   { BinOp { left = UnaryOp { op = UPlus; operand = left }; op; right } }
+  | MINUS left=eb op=op right=eb  { BinOp { left = UnaryOp { op = Invert; operand = left }; op; right } }
 
 eb:
   | LPARENT e=expr RPARENT { e }
@@ -97,15 +98,29 @@ read:
   | READ vars=separated_nonempty_list(COMMA, var) { Read vars }
 
 data:
-  | DATA numbers=separated_nonempty_list(COMMA, snum) { Data numbers }
+  | DATA numbers=separated_nonempty_list(COMMA, snum)
+    { update_data ctx numbers;
+      Data }
+
+snum:
+  | n=INT | PLUS n=INT     { Pos, `Int n }
+  | n=FLOAT | PLUS n=FLOAT { Pos, `Float n }
+  | MINUS n=INT            { Neg, `Int n }
+  | MINUS n=FLOAT          { Neg, `Float n }
 
 print:
   | PRINT items=separated_list(COMMA, pitem) { Print items }
 
 pitem:
-  | e=expr { e }
-  | l=LABEL { Label l }
-  | label=LABEL expr=expr { LabelConcat { label; expr} }
+  | e=expr  { e }
+  | l=LABEL
+    { incr_constant_label ctx;
+      update_printed_length ctx @@ Buffer.length l;
+      Label l }
+  | label=LABEL expr=expr
+    { incr_constant_label ctx;
+      update_printed_length ctx @@ Buffer.length label;
+      LabelConcat { label; expr } }
 
 goto:
   | GO TO i=INT { GoTo i }
@@ -144,8 +159,5 @@ gosub:
 return:
   | RETURN { Return }
 
-snum:
-  | PLUS n=INT    { Pos, `Int n }
-  | PLUS n=FLOAT  { Pos, `Float n }
-  | MINUS n=INT   { Neg, `Int n }
-  | MINUS n=FLOAT { Neg, `Float n }
+end_:
+  | END { set_end_encounter ctx; End }

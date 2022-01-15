@@ -58,7 +58,7 @@ rule read = parse
   | '('         { LPARENT }
   | ')'         { RPARENT }
   | ','         { COMMA }
-  | digit* as d { INT (int_of_string d) }
+  | int as i    { INT (int_of_string i) }
   | float as f  { FLOAT (float_of_string f)}
   | letter as l { LETTER (String.make 1 l) }
   | var as v    { VAR v }
@@ -67,5 +67,5 @@ rule read = parse
 
 and read_string buf = parse
   | '"'             { LABEL buf }
-  | _               { raise Syntax_error }
   | ascii_char as c { Buffer.add_char buf c; read_string buf lexbuf }
+  | _               { raise Syntax_error }

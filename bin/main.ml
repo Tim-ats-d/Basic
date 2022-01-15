@@ -8,13 +8,14 @@ let prgrm =
 50 PRINT X
 60 LET X = X + Y
 80 PRINT Y
-110 END
+90 END
 |basic}
 
 let () =
   match Compiler.compile prgrm with
-  | Ok arr ->
-      Array.iter
-        (function Some s -> print_endline @@ Ast.show_stmt s | None -> ())
-        arr.body
+  | Ok prgrm ->
+      (* Array.iter
+         (function Some s -> print_endline @@ Ast.show_stmt s | None -> ())
+         prgrm.body; *)
+      Array.iter (fun n -> print_endline @@ Ast.show_number n) prgrm.data
   | Error err -> print_endline @@ ErrKind.show err
