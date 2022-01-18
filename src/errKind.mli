@@ -1,6 +1,7 @@
 type t =
   | IllegalConstant
   | IllegalLineNumber
+  | IllegalVariable
   | EndIsNotLast
   | NoEndInstruction
   | NoData

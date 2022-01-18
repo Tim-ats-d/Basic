@@ -1,6 +1,7 @@
 type t =
   | IllegalConstant
   | IllegalLineNumber
+  | IllegalVariable
   | EndIsNotLast
   | NoEndInstruction
   | NoData
@@ -17,6 +18,7 @@ let to_result = Result.error
 let show = function
   | IllegalConstant -> "ILLEGAL CONSTANT"
   | IllegalLineNumber -> "ILLEGAL LINE NUMBER"
+  | IllegalVariable -> "ILLEGAL VARIABLE"
   | EndIsNotLast -> "END IS NOT LAST"
   | NoEndInstruction -> "NO END INSTRUCTION"
   | NoData -> "NO DATA"

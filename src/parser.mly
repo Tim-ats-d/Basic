@@ -29,7 +29,7 @@ prgrm:
   | body=line* EOF
     { raise_no_data ctx;
       raise_no_end ctx;
-      let data = Array.of_list ctx.data in
+      let data = Utils.Stack.of_list ctx.data in
       { body; data; max_line = ctx.max_line } }
 
 line:
@@ -60,7 +60,7 @@ assign:
 
 var:
   | s=subscript      { s }
-  | i=LETTER | i=VAR { Ident i }
+  | i=LETTER | i=VAR { Name i }
 
 subscript:
   | name=VAR LPARENT args=separated_nonempty_list(COMMA, expr) RPARENT
@@ -117,10 +117,11 @@ snum:
   | MINUS n=FLOAT          { raise_illegal_constf n; Neg, `Float n }
 
 print:
-  | PRINT items=separated_list(COMMA, pitem) { Print items }
+  | PRINT items=separated_list(COMMA, pitem)
+    { Print { items; end_newline = false } }
 
 pitem:
-  | e=expr  { e }
+  | e=expr { e }
   | l=LABEL
     { incr_constant_label ctx;
       update_printed_length ctx @@ Buffer.length l;

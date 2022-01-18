@@ -1,16 +1,12 @@
-module Buffer = struct
-  include Buffer
+module U = Utils
 
-  let pp fmt t = Format.pp_print_string fmt @@ Buffer.contents t
-end
-
-type t = { body : stmt option array; data : number array }
+type t = { body : stmt option array; data : number U.Stack.t }
 
 and stmt =
   | Let of { name : string; expr : expr }
   | Read of expr list
   | Data
-  | Print of expr list
+  | Print of { items : expr list; end_newline : bool }
   | GoTo of int
   | IfThen of { left : expr; op : comp_op; right : expr; line : int }
   | For of { var : string; start : expr; stop : expr; step : expr option }
@@ -26,9 +22,9 @@ and stmt =
 and expr =
   | Int of int
   | Float of float
-  | Label of Buffer.t
-  | Ident of string
-  | LabelConcat of { label : Buffer.t; expr : expr }
+  | Label of U.Buffer.t
+  | Name of string
+  | LabelConcat of { label : U.Buffer.t; expr : expr }
   | SubScript of { name : string; args : expr list }
   | BoolOp of { op : bool_op; values : expr list }
   | BinOp of { left : expr; op : op; right : expr }
@@ -55,7 +51,7 @@ and unary_op = UPlus | Invert | Not
 
 type parsed_ast = {
   body : (int * stmt) list;
-  data : number array;
+  data : number U.Stack.t;
   max_line : int;
 }
 [@@deriving show]
